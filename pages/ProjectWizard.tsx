@@ -1,9 +1,10 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, ArrowRight, Sparkles } from 'lucide-react';
+import { ArrowLeft, ArrowRight, Sparkles, Trash2 } from 'lucide-react';
 import { WizardBlueprint, ProjectPlan, Project } from '../types';
 import { generateProjectPlan } from '../services/plannerAgent';
 import { calculateFeasibility } from '../utils/wizardUtils';
+import { saveWizardDraft, loadWizardDraft, clearWizardDraft } from '../services/storage';
 
 // Components
 import { StepBasics } from '../components/wizard/StepBasics';
@@ -15,23 +16,75 @@ import { StepProposal } from '../components/wizard/StepProposal';
 import { WizardSidebar } from '../components/wizard/WizardSidebar';
 import { LiveBlueprintPreview } from '../components/wizard/LiveBlueprintPreview';
 
+const INITIAL_BLUEPRINT: WizardBlueprint = {
+  identity: { projectName: '', clientName: '', website: '' },
+  intent: { type: '', industry: '', goals: [], integrations: [] },
+  constraints: { budget: 15000, currency: 'USD', deadline: '', urgency: 'Medium' },
+  meta: { step: 1, lastUpdated: new Date().toISOString(), status: 'draft' }
+};
+
 const ProjectWizard = () => {
   const navigate = useNavigate();
   const [currentStep, setCurrentStep] = useState(1);
   const [isAutoSaving, setIsAutoSaving] = useState(false);
   const [isScanning, setIsScanning] = useState(false);
+  const [isLoaded, setIsLoaded] = useState(false);
   
   // AI State
   const [generatedPlan, setGeneratedPlan] = useState<ProjectPlan | null>(null);
   const [thoughts, setThoughts] = useState<string[]>([]);
 
-  // Initial Blueprint State
-  const [blueprint, setBlueprint] = useState<WizardBlueprint>({
-    identity: { projectName: '', clientName: '', website: '' },
-    intent: { type: '', industry: '', goals: [], integrations: [] },
-    constraints: { budget: 15000, currency: 'USD', deadline: '', urgency: 'Medium' },
-    meta: { step: 1, lastUpdated: new Date().toISOString(), status: 'draft' }
-  });
+  // Blueprint State
+  const [blueprint, setBlueprint] = useState<WizardBlueprint>(INITIAL_BLUEPRINT);
+
+  // 1. Load Draft on Mount
+  useEffect(() => {
+    const draft = loadWizardDraft();
+    if (draft) {
+      // Validate step range
+      const safeStep = Math.max(1, Math.min(draft.meta.step || 1, 4)); 
+      setBlueprint(draft);
+      setCurrentStep(safeStep);
+    }
+    setIsLoaded(true);
+  }, []);
+
+  // 2. Autosave Effect (Debounced)
+  useEffect(() => {
+    if (!isLoaded) return; // Don't save before initial load
+
+    const timer = setTimeout(() => {
+      setIsAutoSaving(true);
+      
+      const updatedBlueprint = {
+        ...blueprint,
+        meta: {
+          ...blueprint.meta,
+          step: currentStep,
+          lastUpdated: new Date().toISOString()
+        }
+      };
+
+      saveWizardDraft(updatedBlueprint);
+      
+      // Update local state timestamp without triggering loop (ref check handled by logic)
+      setBlueprint(prev => ({ 
+        ...prev, 
+        meta: { ...prev.meta, lastUpdated: new Date().toISOString() } 
+      }));
+
+      setTimeout(() => setIsAutoSaving(false), 800);
+    }, 2000);
+
+    return () => clearTimeout(timer);
+    // Dependencies: Only save when ACTUAL data changes, not every render
+  }, [
+    blueprint.identity, 
+    blueprint.intent, 
+    blueprint.constraints, 
+    currentStep, 
+    isLoaded
+  ]);
 
   // Calculate Feasibility (Memoized)
   const feasibilityScore = useMemo(() => 
@@ -42,16 +95,6 @@ const ProjectWizard = () => {
     ), 
     [blueprint.constraints]
   );
-
-  // Mock Autosave
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setIsAutoSaving(true);
-      setTimeout(() => setIsAutoSaving(false), 800);
-      setBlueprint(prev => ({ ...prev, meta: { ...prev.meta, lastUpdated: new Date().toISOString() } }));
-    }, 2000);
-    return () => clearTimeout(timer);
-  }, [blueprint.identity, blueprint.intent, blueprint.constraints]);
 
   // Handlers
   const updateIdentity = (field: string, value: string) => {
@@ -75,23 +118,38 @@ const ProjectWizard = () => {
     }));
   };
 
+  const handleDiscard = () => {
+    if (window.confirm('Are you sure you want to discard this draft? This cannot be undone.')) {
+      clearWizardDraft();
+      setBlueprint(INITIAL_BLUEPRINT);
+      setCurrentStep(1);
+      setGeneratedPlan(null);
+    }
+  };
+
   // Generate Plan Handler
   const handleGeneratePlan = async () => {
     setCurrentStep(5);
     setThoughts([]);
     
-    // Simulate thinking stream
-    const plan = await generateProjectPlan(
-      blueprint.intent.goals[0] || blueprint.identity.projectName,
-      blueprint.constraints.deadline,
-      (thought) => setThoughts(prev => [...prev, thought])
-    );
-    
-    setGeneratedPlan(plan);
-    // Add small delay to let user see final thought
-    setTimeout(() => {
-      setCurrentStep(6); 
-    }, 1000);
+    try {
+      // Simulate thinking stream
+      const plan = await generateProjectPlan(
+        blueprint.intent.goals[0] || blueprint.identity.projectName,
+        blueprint.constraints.deadline,
+        (thought) => setThoughts(prev => [...prev, thought])
+      );
+      
+      setGeneratedPlan(plan);
+      // Add small delay to let user see final thought
+      setTimeout(() => {
+        setCurrentStep(6); 
+      }, 1000);
+    } catch (error) {
+      console.error("Planning failed:", error);
+      alert("The AI Architect encountered an error. Please try again.");
+      setCurrentStep(4); // Go back to review
+    }
   };
 
   // Approval Handler
@@ -118,6 +176,9 @@ const ProjectWizard = () => {
         status: 'pending'
       }
     };
+
+    // Clean up storage before navigating
+    clearWizardDraft();
 
     // Navigate to Projects page with the new project in state
     navigate('/projects', { state: { newProject } });
@@ -157,6 +218,8 @@ const ProjectWizard = () => {
     if (currentStep === 4) return true; // Review step acts as confirmation
     return false;
   };
+
+  if (!isLoaded) return null; // Prevent flash of default state before load
 
   return (
     <div className="flex h-screen bg-sun-50 text-sun-900 font-sans">
@@ -213,12 +276,24 @@ const ProjectWizard = () => {
          {/* Navigation Bar (Hidden on Step 6 as it uses custom Floating Action Bar) */}
          {currentStep < 5 && (
            <div className="absolute bottom-0 left-0 w-full p-6 bg-white/80 backdrop-blur-md border-t border-sun-200 flex justify-between items-center z-10">
-              <button 
-                 onClick={() => currentStep > 1 ? setCurrentStep(c => c - 1) : navigate('/projects')}
-                 className="px-6 py-2.5 rounded-lg text-sun-600 hover:bg-sun-50 font-medium text-sm flex items-center gap-2 transition-colors"
-              >
-                 <ArrowLeft size={16} /> Back
-              </button>
+              <div className="flex gap-4">
+                <button 
+                   onClick={() => currentStep > 1 ? setCurrentStep(c => c - 1) : navigate('/projects')}
+                   className="px-6 py-2.5 rounded-lg text-sun-600 hover:bg-sun-50 font-medium text-sm flex items-center gap-2 transition-colors"
+                >
+                   <ArrowLeft size={16} /> Back
+                </button>
+                {currentStep > 1 && (
+                  <button 
+                     onClick={handleDiscard}
+                     className="px-4 py-2.5 rounded-lg text-red-400 hover:text-red-600 hover:bg-red-50 font-medium text-sm flex items-center gap-2 transition-colors"
+                     title="Discard Draft"
+                  >
+                     <Trash2 size={16} />
+                  </button>
+                )}
+              </div>
+              
               <button 
                  onClick={() => currentStep === 4 ? handleGeneratePlan() : setCurrentStep(c => c + 1)}
                  className="px-8 py-2.5 rounded-lg bg-sun-900 text-white hover:bg-sun-800 font-medium text-sm flex items-center gap-2 shadow-lg shadow-sun-900/10 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"

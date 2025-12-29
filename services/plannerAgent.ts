@@ -1,6 +1,22 @@
 import { ProjectPlan, ProjectPhase } from '../types';
 
 /**
+ * PRODUCTION NOTE:
+ * This service simulates the behavior of the Gemini 3 Pro model.
+ * In a real backend, this would make a POST request to your API.
+ */
+
+// Sequence of AI "Thoughts" to display in the UI during processing
+const THINKING_STEPS = [
+  "Analyzing semantic intent...",
+  "Retrieving industry templates...",
+  "Identifying core phases...",
+  "Estimating critical path dependencies...",
+  "Optimizing resource allocation...",
+  "Finalizing Work Breakdown Structure..."
+];
+
+/**
  * Simulates the Gemini 3 Pro "Thinking" process and Structured JSON Output.
  * Includes a callback for streaming "thoughts" to the UI.
  */
@@ -9,23 +25,21 @@ export const generateProjectPlan = async (
   deadline: string,
   onThought?: (thought: string) => void
 ): Promise<ProjectPlan> => {
-  return new Promise((resolve) => {
-    
-    // Sequence of AI "Thoughts" to display
-    const thoughts = [
-      "Analyzing semantic intent...",
-      "Retrieving industry templates...",
-      "Identifying core phases...",
-      "Estimating critical path dependencies...",
-      "Optimizing resource allocation...",
-      "Finalizing Work Breakdown Structure..."
-    ];
+  return new Promise((resolve, reject) => {
+    // Basic validation
+    if (!goal || !deadline) {
+      reject(new Error("Missing goal or deadline"));
+      return;
+    }
 
     let step = 0;
 
     const interval = setInterval(() => {
-      if (step < thoughts.length) {
-        if (onThought) onThought(thoughts[step]);
+      // 10% random chance of simulated network stutter (adds realism)
+      if (Math.random() > 0.9) return; 
+
+      if (step < THINKING_STEPS.length) {
+        if (onThought) onThought(THINKING_STEPS[step]);
         step++;
       } else {
         clearInterval(interval);
@@ -33,19 +47,20 @@ export const generateProjectPlan = async (
         const plan = constructPlanFromContext(goal, deadline);
         resolve(plan);
       }
-    }, 800); // New thought every 800ms
+    }, 800); 
   });
 };
 
 /**
  * Contextual Logic to simulate LLM understanding of different industries.
+ * This function acts as the "Mock LLM".
  */
 const constructPlanFromContext = (goal: string, deadline: string): ProjectPlan => {
   const lowerGoal = goal.toLowerCase();
   let phases: ProjectPhase[] = [];
 
   // 1. Software / Tech Context
-  if (lowerGoal.includes('app') || lowerGoal.includes('software') || lowerGoal.includes('platform') || lowerGoal.includes('website') || lowerGoal.includes('tech')) {
+  if (lowerGoal.match(/(app|software|platform|website|tech|api|saas)/)) {
     phases = [
       {
         id: 'p1',
@@ -76,7 +91,7 @@ const constructPlanFromContext = (goal: string, deadline: string): ProjectPlan =
     ];
   } 
   // 2. Marketing / Creative Context
-  else if (lowerGoal.includes('marketing') || lowerGoal.includes('campaign') || lowerGoal.includes('brand') || lowerGoal.includes('launch') || lowerGoal.includes('video')) {
+  else if (lowerGoal.match(/(marketing|campaign|brand|launch|video|content)/)) {
     phases = [
       {
         id: 'p1',
