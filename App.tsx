@@ -1,8 +1,9 @@
 
 import React from 'react';
-import { HashRouter, Routes, Route, Outlet, useLocation, useNavigate, Link } from 'react-router-dom';
-import { LayoutDashboard, Users, Briefcase, CheckSquare, Settings, Zap, ArrowRight, ShieldAlert, Sparkles, ChevronRight, Activity, Command, BrainCircuit } from 'lucide-react';
+import { HashRouter, Routes, Route, Outlet, useLocation, Link } from 'react-router-dom';
+import { LayoutDashboard, Users, Briefcase, CheckSquare, Settings, Sparkles, Command, BrainCircuit, Activity } from 'lucide-react';
 import Dashboard from './pages/Dashboard';
+import HomePage from './pages/HomePage'; // New Import
 import PlaceholderPage from './pages/PlaceholderPage';
 import CRMContacts from './pages/CRMContacts';
 import Projects from './pages/Projects';
@@ -50,10 +51,10 @@ const Sidebar = () => {
   return (
     <div className="w-64 flex-shrink-0 border-r border-sun-200 bg-sun-50 flex flex-col h-screen fixed left-0 top-0 z-10">
       <div className="p-8 pb-8">
-        <div className="flex items-center gap-2">
-          <div className="w-8 h-8 bg-sun-900 rounded-lg flex items-center justify-center text-white font-serif font-bold text-lg">S</div>
+        <Link to="/" className="flex items-center gap-2 group">
+          <div className="w-8 h-8 bg-sun-900 rounded-lg flex items-center justify-center text-white font-serif font-bold text-lg group-hover:scale-105 transition-transform">S</div>
           <span className="font-serif text-xl font-medium tracking-tight text-sun-900">Sun Agency</span>
-        </div>
+        </Link>
       </div>
 
       <nav className="flex-1 px-4 space-y-1">
@@ -81,8 +82,8 @@ const Sidebar = () => {
   );
 };
 
-// Standard Layout shell
-const Layout = () => {
+// Standard Layout shell for App
+const AppLayout = () => {
   return (
     <div className="flex min-h-screen bg-white">
       <Sidebar />
@@ -97,8 +98,11 @@ const App = () => {
   return (
     <HashRouter>
       <Routes>
-        <Route element={<Layout />}>
-          <Route path="/" element={<Dashboard />} />
+        {/* Marketing Site - Standalone Route */}
+        <Route path="/" element={<HomePage />} />
+
+        {/* Authenticated App - Wrapped in Layout */}
+        <Route element={<AppLayout />}>
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/crm/contacts" element={<CRMContacts />} />
           <Route path="/projects" element={<Projects />} />
@@ -106,7 +110,7 @@ const App = () => {
           <Route path="/tasks" element={<PlaceholderPage title="Tasks" type="tasks" />} />
         </Route>
         
-        {/* Full Screen Routes */}
+        {/* Full Screen App Routes (No Sidebar) */}
         <Route path="/projects/new" element={<ProjectWizard />} />
         <Route path="/projects/:projectId/intelligence" element={<ProjectIntelligence />} />
         <Route path="/projects/:projectId/execution-plan" element={<ExecutionPlan />} />

@@ -7,14 +7,14 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Playfair+Display:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&display=swap" rel="stylesheet">
     <script>
       tailwind.config = {
         theme: {
           extend: {
             colors: {
               sun: {
-                accent: '#FF6A3D',
+                accent: '#FF6A3D', // Legacy
                 50: '#F8FAFC',
                 100: '#F1F5F9',
                 200: '#E2E8F0',
@@ -25,11 +25,38 @@
                 700: '#334155',
                 800: '#1E293B',
                 900: '#0F172A',
+              },
+              // New Design System Tokens
+              agency: {
+                void: '#050508',
+                paper: '#FAFAFA',
+                emerald: '#10B981',
+                signal: '#FF6B2C',
+                navy: '#0A1628',
               }
             },
             fontFamily: {
               sans: ['Inter', 'sans-serif'],
               serif: ['Playfair Display', 'serif'],
+            },
+            animation: {
+              'orbit': 'orbit 60s linear infinite',
+              'draw': 'draw 1.5s ease-out forwards',
+              'fade-up': 'fadeUp 0.8s ease-out forwards',
+            },
+            keyframes: {
+              orbit: {
+                '0%': { transform: 'rotate(0deg)' },
+                '100%': { transform: 'rotate(360deg)' },
+              },
+              draw: {
+                '0%': { width: '0%' },
+                '100%': { width: '100%' },
+              },
+              fadeUp: {
+                '0%': { opacity: '0', transform: 'translateY(20px)' },
+                '100%': { opacity: '1', transform: 'translateY(0)' },
+              }
             }
           }
         }
@@ -43,6 +70,25 @@
       }
       .font-serif {
         font-family: 'Playfair Display', serif;
+      }
+      /* Custom Scrollbar for Luxury Feel */
+      ::-webkit-scrollbar {
+        width: 8px;
+      }
+      ::-webkit-scrollbar-track {
+        background: #F1F5F9;
+      }
+      ::-webkit-scrollbar-thumb {
+        background: #CBD5E1;
+        border-radius: 4px;
+      }
+      ::-webkit-scrollbar-thumb:hover {
+        background: #94A3B8;
+      }
+      .glass-panel {
+        background: rgba(255, 255, 255, 0.7);
+        backdrop-filter: blur(12px);
+        border: 1px solid rgba(255, 255, 255, 0.3);
       }
     </style>
   <script type="importmap">
