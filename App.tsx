@@ -1,11 +1,13 @@
+
 import React from 'react';
 import { HashRouter, Routes, Route, Outlet, useLocation, useNavigate, Link } from 'react-router-dom';
-import { LayoutDashboard, Users, Briefcase, CheckSquare, Settings, Zap, ArrowRight, ShieldAlert, Sparkles, ChevronRight, Activity, Command } from 'lucide-react';
+import { LayoutDashboard, Users, Briefcase, CheckSquare, Settings, Zap, ArrowRight, ShieldAlert, Sparkles, ChevronRight, Activity, Command, BrainCircuit } from 'lucide-react';
 import Dashboard from './pages/Dashboard';
 import PlaceholderPage from './pages/PlaceholderPage';
 import CRMContacts from './pages/CRMContacts';
 import Projects from './pages/Projects';
 import ProjectWizard from './pages/ProjectWizard';
+import ProjectIntelligence from './pages/ProjectIntelligence';
 
 // --- Components ---
 
@@ -60,6 +62,7 @@ const Sidebar = () => {
         <NavItem to="/tasks" icon={CheckSquare} label="Tasks" />
         
         <div className="pt-4 mt-4 border-t border-sun-200/50">
+           <NavItem to="/projects/1/intelligence" icon={BrainCircuit} label="Project Intelligence" />
            <NavItem to="/projects/new" icon={Sparkles} label="Project Wizard" />
         </div>
       </nav>
@@ -100,8 +103,10 @@ const App = () => {
           <Route path="/projects/:id" element={<PlaceholderPage title="Project Intelligence" type="project-detail" />} />
           <Route path="/tasks" element={<PlaceholderPage title="Tasks" type="tasks" />} />
         </Route>
-        {/* Wizard Route outside Layout to control full screen experience */}
+        
+        {/* Full Screen Routes */}
         <Route path="/projects/new" element={<ProjectWizard />} />
+        <Route path="/projects/:projectId/intelligence" element={<ProjectIntelligence />} />
       </Routes>
     </HashRouter>
   );

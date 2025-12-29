@@ -41,10 +41,24 @@ const ProjectWizard = () => {
   useEffect(() => {
     const draft = loadWizardDraft();
     if (draft) {
-      // Validate step range
-      const safeStep = Math.max(1, Math.min(draft.meta.step || 1, 4)); 
       setBlueprint(draft);
-      setCurrentStep(safeStep);
+      
+      // Restore generated plan if it exists in artifacts
+      if (draft.artifacts?.wbs) {
+        setGeneratedPlan({
+          goal: draft.intent.goals[0] || draft.identity.projectName,
+          deadline: draft.constraints.deadline,
+          phases: draft.artifacts.wbs
+        });
+        
+        // If we have a plan, allow restoring to step 6, otherwise clamp to 4
+        const savedStep = draft.meta.step || 1;
+        setCurrentStep(savedStep === 6 ? 6 : Math.min(savedStep, 4));
+      } else {
+        // No plan? Clamp to max step 4 (Review)
+        const safeStep = Math.max(1, Math.min(draft.meta.step || 1, 4)); 
+        setCurrentStep(safeStep);
+      }
     }
     setIsLoaded(true);
   }, []);
@@ -82,6 +96,7 @@ const ProjectWizard = () => {
     blueprint.identity, 
     blueprint.intent, 
     blueprint.constraints, 
+    blueprint.artifacts, // Include artifacts in dependency to save plan
     currentStep, 
     isLoaded
   ]);
@@ -141,6 +156,17 @@ const ProjectWizard = () => {
       );
       
       setGeneratedPlan(plan);
+      
+      // Save generated plan to blueprint artifacts so it persists on reload
+      setBlueprint(prev => ({
+        ...prev,
+        artifacts: {
+          ...prev.artifacts,
+          wbs: plan.phases,
+          estimatedTimeline: 30 // Mock estimate
+        }
+      }));
+
       // Add small delay to let user see final thought
       setTimeout(() => {
         setCurrentStep(6); 

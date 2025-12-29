@@ -1,6 +1,8 @@
+
 import React from 'react';
-import { Calendar, CheckSquare, AlertTriangle, TrendingUp, MoreHorizontal } from 'lucide-react';
+import { Calendar, CheckSquare, AlertTriangle, TrendingUp, MoreHorizontal, Sparkles } from 'lucide-react';
 import { Project } from '../types';
+import { useNavigate } from 'react-router-dom';
 
 interface ProjectCardProps {
   project: Project;
@@ -9,6 +11,8 @@ interface ProjectCardProps {
 }
 
 export const ProjectCard: React.FC<ProjectCardProps> = ({ project, isSelected, onClick }) => {
+  const navigate = useNavigate();
+
   return (
     <div 
       onClick={onClick}
@@ -73,6 +77,19 @@ export const ProjectCard: React.FC<ProjectCardProps> = ({ project, isSelected, o
             </div>
           ))}
         </div>
+      </div>
+
+      {/* Hover Action: View Intelligence */}
+      <div className="absolute inset-x-6 bottom-6 translate-y-2 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-300">
+        <button 
+           onClick={(e) => {
+             e.stopPropagation();
+             navigate(`/projects/${project.id}/intelligence`);
+           }}
+           className="w-full py-2 bg-sun-900 text-white text-xs font-medium rounded-lg shadow-lg flex items-center justify-center gap-2 hover:bg-sun-800"
+        >
+          <Sparkles size={12} className="text-sun-accent" /> View Intelligence
+        </button>
       </div>
       
       {/* Selected Indicator */}

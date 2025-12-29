@@ -149,3 +149,51 @@ export interface WizardBlueprint {
     status: 'draft' | 'processing' | 'ready' | 'committed';
   };
 }
+
+// --- Intelligence Screen Types ---
+
+export interface IntelligenceAgent {
+  id: string;
+  type: 'agent';
+  name: string;
+  role: string;
+  why: string;
+  produces: string;
+  confidence: 'High' | 'Medium' | 'Low';
+}
+
+export interface IntelligenceAutomation {
+  id: string;
+  type: 'automation';
+  trigger: string;
+  action: string;
+  outcome: string;
+  risk: 'Low' | 'Medium' | 'High';
+}
+
+export interface IntelligenceWorkflow {
+  id: string;
+  type: 'workflow';
+  name: string;
+  stepCount: number;
+  outputs: string;
+  whenToUse: string;
+}
+
+export interface IntelligenceJourney {
+  id: string;
+  type: 'journey';
+  actor: string;
+  steps: string[];
+  value: string;
+}
+
+export interface IntelligenceExample {
+  id: string;
+  type: 'example';
+  scenario: string;
+  built: string;
+  outcome: string;
+}
+
+export type IntelligenceItem = IntelligenceAgent | IntelligenceAutomation | IntelligenceWorkflow | IntelligenceJourney | IntelligenceExample;

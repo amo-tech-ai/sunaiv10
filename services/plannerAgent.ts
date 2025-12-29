@@ -1,9 +1,10 @@
+
 import { ProjectPlan, ProjectPhase } from '../types';
 
 /**
- * PRODUCTION NOTE:
- * This service simulates the behavior of the Gemini 3 Pro model.
- * In a real backend, this would make a POST request to your API.
+ * Simulates 'The Planner' agent using Gemini 3 Pro with Thinking Config.
+ * Input: Goal & Deadline
+ * Output: Work Breakdown Structure (WBS)
  */
 
 // Sequence of AI "Thoughts" to display in the UI during processing
@@ -26,7 +27,6 @@ export const generateProjectPlan = async (
   onThought?: (thought: string) => void
 ): Promise<ProjectPlan> => {
   return new Promise((resolve, reject) => {
-    // Basic validation
     if (!goal || !deadline) {
       reject(new Error("Missing goal or deadline"));
       return;
@@ -47,20 +47,19 @@ export const generateProjectPlan = async (
         const plan = constructPlanFromContext(goal, deadline);
         resolve(plan);
       }
-    }, 800); 
+    }, 600); 
   });
 };
 
 /**
  * Contextual Logic to simulate LLM understanding of different industries.
- * This function acts as the "Mock LLM".
  */
 const constructPlanFromContext = (goal: string, deadline: string): ProjectPlan => {
   const lowerGoal = goal.toLowerCase();
   let phases: ProjectPhase[] = [];
 
   // 1. Software / Tech Context
-  if (lowerGoal.match(/(app|software|platform|website|tech|api|saas)/)) {
+  if (lowerGoal.match(/(app|software|platform|website|tech|api|saas|crm)/)) {
     phases = [
       {
         id: 'p1',

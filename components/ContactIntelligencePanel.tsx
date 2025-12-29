@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { 
   User, 
@@ -8,7 +9,8 @@ import {
   Globe, 
   TrendingUp, 
   TrendingDown, 
-  Loader2 
+  Loader2,
+  ArrowRight
 } from 'lucide-react';
 import { Contact } from '../types';
 import { EmailDraftModal } from './EmailDraftModal';
@@ -66,159 +68,153 @@ export const ContactIntelligencePanel: React.FC<ContactIntelligencePanelProps> =
 
   if (!contact) {
     return (
-      <div className="w-80 flex flex-col items-center justify-center h-screen text-sun-400 p-8 text-center border-l border-sun-200 bg-sun-50/50 flex-shrink-0 sticky top-0 right-0">
-        <div className="w-16 h-16 rounded-full bg-sun-100 flex items-center justify-center mb-4">
-          <User size={32} className="opacity-20 text-sun-900" />
+      <div className="w-80 border-l border-sun-200 bg-sun-50/30 h-screen sticky top-0 right-0 flex flex-col items-center justify-center text-center p-8">
+        <div className="w-12 h-12 rounded-full bg-sun-100 flex items-center justify-center mb-4 text-sun-300">
+          <Sparkles size={20} />
         </div>
-        <p className="text-sm font-medium text-sun-500">Select a contact</p>
-        <p className="text-xs text-sun-400 mt-1">View AI intelligence and details</p>
+        <h3 className="font-serif text-lg text-sun-400">Context Intelligence</h3>
+        <p className="text-xs text-sun-400 mt-2 max-w-[200px]">
+          Select a contact to view AI-generated insights, relationship scoring, and enrichment data.
+        </p>
       </div>
     );
   }
 
   return (
     <>
-      <div className="w-80 border-l border-sun-200 bg-sun-50/50 h-screen overflow-y-auto sticky top-0 right-0 flex flex-col flex-shrink-0">
-        {/* Details Header */}
-        <div className="p-8 border-b border-sun-200 bg-white">
-            <div className="flex justify-between items-start mb-4">
-              <div className="w-16 h-16 bg-sun-900 rounded-full flex items-center justify-center text-white font-serif text-2xl">
-                {contact.avatar}
+      <div className="w-80 border-l border-sun-200 bg-white h-screen overflow-y-auto sticky top-0 right-0 flex flex-col shadow-[0_0_40px_-10px_rgba(0,0,0,0.05)] z-20">
+        
+        {/* Header Section */}
+        <div className="px-8 pt-10 pb-6 border-b border-sun-100 bg-white">
+            <div className="flex justify-between items-start mb-6">
+              <div className="relative">
+                <div className="w-20 h-20 bg-sun-900 rounded-full flex items-center justify-center text-white font-serif text-2xl shadow-lg shadow-sun-900/10">
+                  {contact.avatar}
+                </div>
+                {scoreData && (
+                   <div className={`absolute -bottom-1 -right-1 w-6 h-6 rounded-full border-2 border-white flex items-center justify-center shadow-sm ${scoreData.score < 50 ? 'bg-red-500' : 'bg-green-500'}`}>
+                      {scoreData.score < 50 ? <TrendingDown size={12} className="text-white"/> : <TrendingUp size={12} className="text-white"/>}
+                   </div>
+                )}
               </div>
-              <button className="text-sun-400 hover:text-sun-600">
+              <button className="text-sun-300 hover:text-sun-900 transition-colors">
                 <MoreHorizontal size={20} />
               </button>
             </div>
-            <h2 className="font-serif text-2xl text-sun-900 mb-1">{contact.name}</h2>
-            <div className="flex items-center gap-2">
-              <p className="text-sun-500 text-sm">{contact.role} at {contact.company}</p>
-              <a href="#" className="text-sun-300 hover:text-[#0077b5]"><Globe size={12} /></a>
+            
+            <h2 className="font-serif text-2xl text-sun-900 mb-1 leading-tight">{contact.name}</h2>
+            <p className="text-sm text-sun-500 font-medium">{contact.role}, {contact.company}</p>
+            
+            <div className="flex gap-4 mt-6">
+               <a href={`mailto:${contact.email}`} className="p-2 rounded-full border border-sun-200 text-sun-400 hover:text-sun-900 hover:border-sun-300 transition-colors">
+                  <Mail size={16} />
+               </a>
+               <button className="p-2 rounded-full border border-sun-200 text-sun-400 hover:text-sun-900 hover:border-sun-300 transition-colors">
+                  <Calendar size={16} />
+               </button>
             </div>
         </div>
 
-        {/* Content */}
-        <div className="p-6 space-y-6">
-            {/* Metadata */}
-            <div className="space-y-3 p-4 bg-white rounded-lg border border-sun-200 shadow-sm">
-              <div className="flex items-center gap-3 text-sm text-sun-600">
-                  <Mail size={14} className="text-sun-400" /> 
-                  <span className="truncate">{contact.email}</span>
-              </div>
-              <div className="flex items-center gap-3 text-sm text-sun-600">
-                  <Calendar size={14} className="text-sun-400" /> 
-                  <span>Last contact: {contact.lastContact}</span>
-              </div>
-            </div>
-
-            {/* Separator */}
-            <div className="flex items-center gap-2 mb-2">
-              <div className="h-px flex-1 bg-sun-200"></div>
-              <span className="text-[10px] uppercase tracking-widest text-sun-400 font-semibold">Intelligence</span>
-              <div className="h-px flex-1 bg-sun-200"></div>
-            </div>
-
-            {/* Phase 3: The Scorer */}
-            <div className="p-4 bg-white border border-sun-200 rounded-lg shadow-sm">
-               <h3 className="text-xs font-semibold text-sun-400 uppercase tracking-wider mb-3">Relationship Health</h3>
+        {/* Intelligence Content */}
+        <div className="p-8 space-y-10">
+            
+            {/* Phase 3: Relationship Health */}
+            <section>
+               <div className="flex items-center gap-2 mb-4">
+                 <h3 className="text-xs font-bold text-sun-900 uppercase tracking-widest">Relationship Score</h3>
+                 {scoring && <Loader2 size={10} className="animate-spin text-sun-400" />}
+               </div>
                
-               {scoring ? (
-                  <div className="flex items-center gap-2 text-sun-400 text-sm">
-                    <Loader2 size={14} className="animate-spin" />
-                    <span>Analyzing interactions...</span>
-                  </div>
-               ) : scoreData ? (
-                  <div className="space-y-3 animate-in fade-in duration-300">
-                    <div className="flex items-end gap-2">
-                      <span className={`text-3xl font-serif font-medium ${scoreData.score < 50 ? 'text-red-500' : 'text-sun-900'}`}>
-                        {scoreData.score}
-                      </span>
-                      <span className="text-xs text-sun-400 mb-1.5">/ 100</span>
-                      {scoreData.score < 50 ? (
-                         <span className="ml-auto text-xs font-medium text-red-600 bg-red-50 px-2 py-1 rounded-full flex items-center gap-1">
-                            <TrendingDown size={10} /> At Risk
-                         </span>
-                      ) : (
-                         <span className="ml-auto text-xs font-medium text-green-600 bg-green-50 px-2 py-1 rounded-full flex items-center gap-1">
-                            <TrendingUp size={10} /> Strong
-                         </span>
-                      )}
+               {scoreData ? (
+                  <div className="animate-in fade-in duration-500">
+                    <div className="flex items-baseline gap-1 mb-2">
+                      <span className="font-serif text-4xl text-sun-900">{scoreData.score}</span>
+                      <span className="text-sm text-sun-400">/100</span>
                     </div>
                     
-                    {/* Progress Bar */}
-                    <div className="w-full h-1.5 bg-sun-100 rounded-full overflow-hidden">
+                    <div className="w-full h-1 bg-sun-100 rounded-full overflow-hidden mb-4">
                       <div 
-                        className={`h-full rounded-full transition-all duration-1000 ${scoreData.score < 50 ? 'bg-red-400' : 'bg-green-500'}`} 
+                        className={`h-full transition-all duration-1000 ${scoreData.score < 50 ? 'bg-red-400' : 'bg-sun-900'}`} 
                         style={{ width: `${scoreData.score}%` }}
                       ></div>
                     </div>
 
-                    {/* Reasoning */}
-                    <div className="pt-2 border-t border-sun-50">
-                      <p className="text-xs text-sun-500 leading-relaxed">
-                        <span className="font-semibold text-sun-700">Why: </span>
-                        {scoreData.reason}
+                    <div className="p-4 bg-sun-50 rounded-xl border border-sun-100">
+                      <p className="text-xs text-sun-600 leading-relaxed italic">
+                        "{scoreData.reason}"
                       </p>
                     </div>
                   </div>
                ) : (
-                 <p className="text-xs text-sun-400">Unable to calculate score.</p>
+                 <div className="h-20 bg-sun-50 animate-pulse rounded-xl"></div>
                )}
-            </div>
+            </section>
             
-            {/* Phase 2: The Researcher */}
-            <div className="p-4 bg-white border border-sun-200 rounded-lg shadow-sm relative overflow-hidden">
-               <div className="flex justify-between items-center mb-3">
-                 <h3 className="text-xs font-semibold text-sun-400 uppercase tracking-wider">Enrichment</h3>
-                 {enrichedData && <span className="text-[10px] text-sun-300 flex items-center gap-1"><Sparkles size={10}/> Google Search</span>}
+            {/* Phase 2: Enrichment */}
+            <section>
+               <div className="flex justify-between items-center mb-4">
+                 <h3 className="text-xs font-bold text-sun-900 uppercase tracking-widest">Company Intelligence</h3>
                </div>
 
                {!enrichedData ? (
-                 <div className="text-center py-4">
-                   {enriching ? (
-                      <div className="flex flex-col items-center gap-2">
-                        <div className="h-1 w-12 bg-sun-200 rounded overflow-hidden">
-                           <div className="h-full bg-sun-accent animate-progress"></div>
-                        </div>
-                        <span className="text-xs text-sun-500">Researching company...</span>
-                      </div>
-                   ) : (
-                      <button 
+                   <div className="relative group">
+                     <div className="absolute inset-0 bg-sun-900/5 rounded-xl transform rotate-1 transition-transform group-hover:rotate-2"></div>
+                     <button 
                         onClick={handleEnrich}
-                        className="text-xs font-medium text-sun-600 bg-sun-50 hover:bg-sun-100 px-3 py-2 rounded-md border border-sun-200 transition-colors flex items-center justify-center gap-2 w-full"
+                        disabled={enriching}
+                        className="relative w-full py-6 bg-white border border-sun-200 rounded-xl flex flex-col items-center justify-center gap-3 text-sun-500 hover:border-sun-300 hover:text-sun-900 transition-all"
                       >
-                        <Sparkles size={12} className="text-sun-accent" />
-                        Auto-Enrich Profile
+                        {enriching ? (
+                          <>
+                             <Loader2 size={20} className="animate-spin text-sun-accent" />
+                             <span className="text-xs font-medium">Consulting Gemini...</span>
+                          </>
+                        ) : (
+                          <>
+                             <Sparkles size={20} className="text-sun-accent" />
+                             <span className="text-xs font-medium">Enrich Profile</span>
+                          </>
+                        )}
                       </button>
-                   )}
-                 </div>
+                   </div>
                ) : (
-                 <div className="space-y-3 animate-in fade-in duration-300">
+                 <div className="space-y-4 animate-in fade-in slide-in-from-bottom-2 duration-500">
                     <div>
-                      <span className="text-[10px] text-sun-400 uppercase">Industry</span>
-                      <p className="text-sm text-sun-800 font-medium">{enrichedData.industry}</p>
+                      <span className="text-[10px] text-sun-400 uppercase tracking-wider font-semibold">Latest News</span>
+                      <p className="text-sm text-sun-900 mt-1 leading-relaxed border-l-2 border-sun-200 pl-3">
+                        {enrichedData.recentNews}
+                      </p>
                     </div>
-                    <div>
-                      <span className="text-[10px] text-sun-400 uppercase">Latest News</span>
-                      <p className="text-sm text-sun-600 leading-snug">{enrichedData.recentNews}</p>
+                    
+                    <div className="grid grid-cols-2 gap-4">
+                       <div className="p-3 bg-sun-50 rounded-lg">
+                          <span className="text-[10px] text-sun-400 uppercase tracking-wider block mb-1">Industry</span>
+                          <span className="text-xs font-medium text-sun-900">{enrichedData.industry}</span>
+                       </div>
+                       <div className="p-3 bg-sun-50 rounded-lg">
+                          <span className="text-[10px] text-sun-400 uppercase tracking-wider block mb-1">Location</span>
+                          <span className="text-xs font-medium text-sun-900">{enrichedData.location}</span>
+                       </div>
                     </div>
-                    <div className="pt-2">
-                      <span className="inline-flex items-center gap-1 text-[10px] text-sun-400 bg-sun-50 px-2 py-1 rounded">
-                        <Globe size={10} /> {enrichedData.location}
-                      </span>
+                    
+                    <div className="flex justify-end">
+                       <span className="text-[10px] text-sun-300 flex items-center gap-1">
+                         <Globe size={10} /> Sourced via Google
+                       </span>
                     </div>
                  </div>
                )}
-            </div>
+            </section>
         </div>
         
-        {/* Phase 4: Actions */}
-        <div className="mt-auto p-6 border-t border-sun-200 bg-white">
+        {/* Phase 4: Sticky Action Footer */}
+        <div className="mt-auto p-8 border-t border-sun-100 bg-white sticky bottom-0">
             <button 
               onClick={() => setShowEmailModal(true)}
-              className="w-full py-2 bg-sun-900 text-white rounded-lg text-sm font-medium hover:bg-sun-800 transition-colors flex items-center justify-center gap-2 shadow-lg shadow-sun-900/10"
+              className="w-full py-3.5 bg-sun-900 text-white rounded-xl text-sm font-medium hover:bg-sun-800 transition-all flex items-center justify-center gap-2 shadow-xl shadow-sun-900/10 hover:shadow-sun-900/20 active:scale-[0.98]"
             >
-              <Mail size={16} />
-              Draft Follow-up
+              <Sparkles size={16} className="text-sun-accent" />
+              Generate Follow-up
             </button>
         </div>
       </div>
