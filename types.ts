@@ -197,3 +197,45 @@ export interface IntelligenceExample {
 }
 
 export type IntelligenceItem = IntelligenceAgent | IntelligenceAutomation | IntelligenceWorkflow | IntelligenceJourney | IntelligenceExample;
+
+// --- Execution Plan Types ---
+
+export type ExecutionStatus = 'draft' | 'active' | 'paused' | 'completed';
+
+export interface ExecutionTask {
+  id: string;
+  title: string;
+  status: 'pending' | 'in-progress' | 'blocked' | 'done';
+  assignedTo: string; // "Human" or Agent Name
+  dueDate: string;
+  dependency?: string;
+}
+
+export interface ExecutionAgent {
+  id: string;
+  name: string;
+  role: string;
+  status: 'idle' | 'running' | 'waiting' | 'error';
+  lastAction?: string;
+}
+
+export interface ExecutionAutomation {
+  id: string;
+  name: string;
+  trigger: string;
+  status: 'enabled' | 'disabled';
+  lastRun?: string;
+}
+
+export interface ExecutionPlan {
+  id: string;
+  projectId: string;
+  version: number;
+  status: ExecutionStatus;
+  startDate: string;
+  owner: string;
+  riskLevel: 'Low' | 'Medium' | 'High';
+  tasks: ExecutionTask[];
+  agents: ExecutionAgent[];
+  automations: ExecutionAutomation[];
+}

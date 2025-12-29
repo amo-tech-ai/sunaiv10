@@ -8,6 +8,7 @@ import CRMContacts from './pages/CRMContacts';
 import Projects from './pages/Projects';
 import ProjectWizard from './pages/ProjectWizard';
 import ProjectIntelligence from './pages/ProjectIntelligence';
+import ExecutionPlan from './pages/ExecutionPlan';
 
 // --- Components ---
 
@@ -63,6 +64,7 @@ const Sidebar = () => {
         
         <div className="pt-4 mt-4 border-t border-sun-200/50">
            <NavItem to="/projects/1/intelligence" icon={BrainCircuit} label="Project Intelligence" />
+           <NavItem to="/projects/1/execution-plan" icon={Activity} label="Execution Plan" />
            <NavItem to="/projects/new" icon={Sparkles} label="Project Wizard" />
         </div>
       </nav>
@@ -107,6 +109,7 @@ const App = () => {
         {/* Full Screen Routes */}
         <Route path="/projects/new" element={<ProjectWizard />} />
         <Route path="/projects/:projectId/intelligence" element={<ProjectIntelligence />} />
+        <Route path="/projects/:projectId/execution-plan" element={<ExecutionPlan />} />
       </Routes>
     </HashRouter>
   );
